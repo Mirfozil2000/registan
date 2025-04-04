@@ -13,10 +13,20 @@ export class UsersService {
       select: {
         id: true,
         email: true,
-        password: true, 
+        password: true,
         role: true,
         createdAt: true,
         updatedAt: true,
+      }
+    });
+  }
+  findAll() {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        createdAt: true
       }
     });
   }

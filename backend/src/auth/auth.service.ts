@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
@@ -48,6 +48,7 @@ export class AuthService {
         email: true,
         password: true,
         role: true,
+        changePassword: true, // Добавляем поле changePassword
         createdAt: true,
         updatedAt: true,
       }
@@ -55,7 +56,11 @@ export class AuthService {
     if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const { password, ...userData } = user;
+    // Проверка необходимости смены пароля
+    if (user.changePassword) {
+      throw new ForbiddenException('Password change required');
+    }
+    const { password, changePassword, ...userData } = user;
     return {
       status: 'success',
       message: 'Login successful',
@@ -66,9 +71,24 @@ export class AuthService {
     };
   }
   private generateJwtToken(user: any) {
-    const payload = { email: user.email, sub: user.id, role: user.role };
+    const payload = { 
+      email: user.email, 
+      sub: user.id, 
+      role: user.role,
+      changePassword: user.changePassword 
+    };
     return {
       access_token: this.jwtService.sign(payload),
     };
+  }
+  async changePassword(userId: number, newPassword: string) {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        changePassword: false
+      }
+    });
   }
 }

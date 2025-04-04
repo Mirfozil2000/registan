@@ -4,6 +4,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PrismaService } from './prisma/prisma.service';
+import { ClassGroupsModule } from './class-groups/class-groups.module';
+import { StudentsModule } from './students/students.module';
 
 @Module({
   imports: [
@@ -20,6 +22,9 @@ import { PrismaService } from './prisma/prisma.service';
     }),
     AuthModule,
     UsersModule,
+    StudentsModule, 
+    ClassGroupsModule, 
+    // MedicalRecordsModule
   ],
   providers: [PrismaService],
 })
